@@ -48,11 +48,11 @@ let SignatureVersion = DeviceFileEvents
 //
 // Block where we extract Signature version info
 //
-let PlatformVersion = DeviceFileEvents
-| where FileName == "MsMpEng.exe"
-| where FolderPath has @"C:\ProgramData\Microsoft\Windows Defender\Platform\"
+let PlatformVersion = DeviceProcessEvents
+| where InitiatingProcessFileName == "MsMpEng.exe"
+| where InitiatingProcessFolderPath has @"C:\ProgramData\Microsoft\Windows Defender\Platform\" or InitiatingProcessFolderPath has @"c:\program files\microsoft security client\"
 | where Timestamp > PlatformstartDate
-| extend PlatformVersion_Initial=tostring(split(FolderPath, "\\", 5))
+| extend PlatformVersion_Initial=tostring(split(InitiatingProcessFolderPath, "\\", 5))
 | summarize arg_max(Timestamp, *) by DeviceName
 | project DeviceName, PlatformVersion_Final=extract("([0-9].[0-9][0-9].[0-9][0-9][0-9][0-9].[0-9]-[0-9])", 0, PlatformVersion_Initial);
 //
